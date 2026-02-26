@@ -1,0 +1,70 @@
+services:
+  # Markaziy Yuk Taqsimlovchi (Load Balancer)
+  load-balancer:
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM python:3.12-slim
+        WORKDIR /app
+        COPY pyproject.toml poetry.lock* ./
+        RUN pip install poetry && poetry config virtualenvs.create false && poetry install --no-root
+        COPY load_balancer ./load_balancer
+        CMD ["uvicorn", "load_balancer.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "8000:8000"
+    environment:
+      # JSON formatda BACKEND_SERVICES
+      - BACKEND_SERVICES=["http://service-1:8001","http://service-2:8002","http://service-3:8003"]
+      - LB_ALGORITHM=round_robin
+    depends_on:
+      - service-1
+      - service-2
+      - service-3
+
+  # Mikroservis 1
+  service-1:
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM python:3.12-slim
+        WORKDIR /app
+        COPY pyproject.toml poetry.lock* ./
+        RUN pip install poetry && poetry config virtualenvs.create false && poetry install --no-root
+        COPY service_1 ./service_1
+        CMD ["uvicorn", "service_1.main:app", "--host", "0.0.0.0", "--port", "8001"]
+    ports:
+      - "8001:8001"
+    environment:
+      - SERVICE_NAME=Service 1
+
+  # Mikroservis 2
+  service-2:
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM python:3.12-slim
+        WORKDIR /app
+        COPY pyproject.toml poetry.lock* ./
+        RUN pip install poetry && poetry config virtualenvs.create false && poetry install --no-root
+        COPY service_2 ./service_2
+        CMD ["uvicorn", "service_2.main:app", "--host", "0.0.0.0", "--port", "8002"]
+    ports:
+      - "8002:8002"
+    environment:
+      - SERVICE_NAME=Service 2
+
+  # Mikroservis 3
+  service-3:
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM python:3.12-slim
+        WORKDIR /app
+        COPY pyproject.toml poetry.lock* ./
+        RUN pip install poetry && poetry config virtualenvs.create false && poetry install --no-root
+        COPY service_3 ./service_3
+        CMD ["uvicorn", "service_3.main:app", "--host", "0.0.0.0", "--port", "8003"]
+    ports:
+      - "8003:8003"
+    environment:
+      - SERVICE_NAME=Service 3

@@ -1,0 +1,22 @@
+🛠 Servislar ishga tushirilmoqda...
+/Users/macbook/BMI/microservice_demo/full_demo.py:49: DeprecationWarning: There is no current event loop
+  loop = asyncio.get_event_loop()
+⏱ Vaqt: 0s | Serverlardagi yuk (Active Connections):
+   - http://service-1:8001: 0
+   - http://service-2:8002: 0
+   - http://service-3:8003: 0
+🚀 So'rovlar yuborilyapti...
+⏱ Vaqt: 1s | Serverlardagi yuk (Active Connections):
+   - http://service-1:8001: 0
+   - http://service-2:8002: 0
+   - http://service-3:8003: 0
+⏱ Vaqt: 2s | Serverlardagi yuk (Active Connections):
+   - http://service-1:8001: 0
+   - http://service-2:8002: 0
+   - http://service-3:8003: 0
+⏱ Vaqt: 3s | Serverlardagi yuk (Active Connections):
+   - http://service-1:8001: 0
+   - http://service-2:8002: 0
+   - http://service-3:8003: 0
+
+🧹 Tozalash...
