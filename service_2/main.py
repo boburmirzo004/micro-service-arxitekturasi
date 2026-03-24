@@ -3,6 +3,7 @@ import socket
 import os
 import random
 import asyncio
+import httpx
 
 app = FastAPI()
 
@@ -23,3 +24,4 @@ async def read_root():
 @app.get("/health")
 def health_check():
     return {"status": "ok", "service": SERVICE_NAME}
+

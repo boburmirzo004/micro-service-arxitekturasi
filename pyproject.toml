@@ -11,6 +11,12 @@ fastapi = "^0.129.0"
 httpx = "^0.28.1"
 uvicorn = "^0.41.0"
 pydantic-settings = "^2.13.1"
+load-balancer = "^0.1.1"
+aiohttp = "^3.13.3"
+matplotlib = "^3.10.8"
+
+[tool.poetry.dev-dependencies]
+pytest = "^8.0.0"
 
 
 [build-system]

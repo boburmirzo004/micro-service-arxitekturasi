@@ -1,45 +1,58 @@
 import asyncio
+import os
+
 import httpx
-import json
-import time
 
-LB_URL = "http://127.0.0.1:8000"
+LB_URL = os.getenv("LB_URL", "http://127.0.0.1:8000")
 STATS_URL = f"{LB_URL}/stats"
-NUM_REQUESTS = 50
+NUM_REQUESTS = 1000
 
-async def send_requests():
-    """Sends many requests to the load balancer to create load"""
-    async with httpx.AsyncClient() as client:
+LIMITS = httpx.Limits(max_connections=1200, max_keepalive_connections=200)
+
+
+async def sorovlar_yuborish():
+    print(f"{NUM_REQUESTS} ta sorov yuborilmoqda...")
+    async with httpx.AsyncClient(limits=LIMITS, timeout=30.0) as client:
         tasks = [client.get(LB_URL) for _ in range(NUM_REQUESTS)]
-        await asyncio.gather(*tasks)
+        natijalar = await asyncio.gather(*tasks, return_exceptions=True)
+        xatolar = [r for r in natijalar if isinstance(r, Exception)]
+        if xatolar:
+            print(f"{len(xatolar)} ta sorovda xatolik.", flush=True)
 
-async def monitor_stats():
-    """Monitors the load balancer stats while load is being applied"""
-    print("--- 🔍 Load Balancer Monitoring ---")
-    async with httpx.AsyncClient() as client:
-        for i in range(5): # Check stats 5 times
+
+async def monitoring():
+    print("Load Balancer Monitoring")
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        for i in range(10):
             try:
                 response = await client.get(STATS_URL)
-                data = response.json()
-                active = data['details']['active_connections']
-                print(f"Time {i+1}s | Active Connections: {active}")
-            except Exception as e:
-                print(f"Error fetching stats: {e}")
+                if response.status_code == 200:
+                    data = response.json()
+                    active = data["details"]["active_connections"]
+                    metrics = data.get("metrics", {})
+                    print(
+                        f"Vaqt: {i*0.5:.1f}s | "
+                        f"Active: {active} | "
+                        f"Total: {metrics.get('total_requests')} | "
+                        f"Errors: {metrics.get('total_errors')} | "
+                        f"Avg: {metrics.get('avg_latency_sec')}"
+                    )
+            except Exception:
+                pass
             await asyncio.sleep(0.5)
 
+
 async def main():
-    print("🚀 Demo boshlanmoqda...")
-    print(f"Maqsad: {NUM_REQUESTS} ta so'rov yuborish va real vaqtda serverlardagi ulanishlarni ko'rish.\n")
-    
-    # Start monitoring and sending requests
-    # We use a slight delay before sending requests so we can catch the 'zero' state too
-    monitor_task = asyncio.create_task(monitor_stats())
-    await asyncio.sleep(0.2)
-    
-    request_task = asyncio.create_task(send_requests())
-    
+    print("Demo boshlanmoqda...")
+    print(f"{NUM_REQUESTS} ta sorov yuborib real vaqtda yukni koramiz.\n")
+
+    monitor_task = asyncio.create_task(monitoring())
+    await asyncio.sleep(0.5)
+    request_task = asyncio.create_task(sorovlar_yuborish())
+
     await asyncio.gather(monitor_task, request_task)
-    print("\n✅ Demo yakunlandi.")
+    print("\nDemo yakunlandi.")
+
 
 if __name__ == "__main__":
     asyncio.run(main())
