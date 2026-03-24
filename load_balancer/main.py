@@ -45,30 +45,20 @@ app = FastAPI(lifespan=lifespan, title="Load Balancer")
 async def get_lb_stats():
     stats = load_balancer.get_stats()
     latencies = list(_metrics["latencies"])
-    avg_latency = None
-    p95_latency = None
-    max_latency = None
+    avg_latency = 0
 
     if latencies:
-        latencies_sorted = sorted(latencies)
-        avg_latency = sum(latencies_sorted) / len(latencies_sorted)
-        idx_95 = int(0.95 * (len(latencies_sorted) - 1))
-        p95_latency = latencies_sorted[idx_95]
-        max_latency = latencies_sorted[-1]
+        avg_latency = sum(latencies) / len(latencies)
 
     return {
         "status": "online",
         "algorithm": settings.LB_ALGORITHM,
-        "details": stats,
-        "weights": settings.SERVICE_WEIGHTS,
-        "metrics": {
-            "total_requests": _metrics["total_requests"],
-            "total_errors": _metrics["total_errors"],
-            "avg_latency_sec": avg_latency,
-            "p95_latency_sec": p95_latency,
-            "max_latency_sec": max_latency,
-            "per_service": _metrics["per_service"],
-        },
+        "healthy_services": stats["healthy_services"],
+        "active_connections": stats["active_connections"],
+        "total_requests": _metrics["total_requests"],
+        "total_errors": _metrics["total_errors"],
+        "average_latency": avg_latency,
+        "per_service_metrics": _metrics["per_service"]
     }
 
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])
