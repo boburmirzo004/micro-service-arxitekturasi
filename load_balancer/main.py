@@ -50,7 +50,7 @@ async def get_lb_stats():
     if latencies:
         avg_latency = sum(latencies) / len(latencies)
 
-    return {
+    res_data = {
         "status": "online",
         "algorithm": settings.LB_ALGORITHM,
         "healthy_services": stats["healthy_services"],
@@ -60,6 +60,14 @@ async def get_lb_stats():
         "average_latency": avg_latency,
         "per_service_metrics": _metrics["per_service"]
     }
+
+    output = ""
+    for key, value in res_data.items():
+        output += f"{key}: {value}\n"
+
+    return Response(content=output, media_type="text/plain")
+
+    
 
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])
 async def proxy(request: Request, path: str):

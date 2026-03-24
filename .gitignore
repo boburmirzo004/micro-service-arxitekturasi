@@ -170,3 +170,4 @@ cython_debug/
 
 # Test grafiklar
 graph_*.png
+.env.example/
